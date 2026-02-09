@@ -136,7 +136,7 @@ function getWelcomePage() {
         <li><code>GOOGLE_API_KEY</code> - from <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a></li>
         <li><code>OPENROUTER_API_KEY</code> - from <a href="https://openrouter.ai" target="_blank">openrouter.ai</a></li>
       </ul>
-       <p>After adding the variable, redeploy or restart your container.</p>
+      <p>After adding the variable, redeploy or restart your container.</p>
     `;
   } else if (!openclawHealthy) {
     statusClass = 'warning';
