@@ -55,6 +55,24 @@ Deploy to the cloud in 60 seconds. Pick your AI provider:
 | **Google** (Gemini) | [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template/simplestclaw-gemini) |
 | **OpenRouter** | [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template/simplestclaw-openrouter) |
 
+#### Prefer Google Cloud Run or DigitalOcean?
+
+Railway is not required—the gateway is just a Node.js service and can run anywhere a container can. A minimal Dockerfile is available at `apps/gateway/Dockerfile`.
+
+- **Google Cloud Run**:  
+  ```bash
+  gcloud builds submit --tag gcr.io/PROJECT_ID/simplestclaw-gateway .
+  gcloud run deploy simplestclaw-gateway \
+    --image gcr.io/PROJECT_ID/simplestclaw-gateway \
+    --region YOUR_REGION \
+    --port 3000 \
+    --set-env-vars ANTHROPIC_API_KEY=...,OPENAI_API_KEY=...,GOOGLE_API_KEY=...,OPENROUTER_API_KEY=...,OPENCLAW_GATEWAY_TOKEN=...
+  ```
+- **DigitalOcean App Platform**:  
+  Create a new App, point it at this repo, choose `apps/gateway/Dockerfile` as the service source, set the HTTP port to **3000**, and add the same environment variables as above.
+
+The required variables are the API keys for whichever model providers you want to enable, plus the optional `OPENCLAW_GATEWAY_TOKEN`.
+
 <details>
 <summary><strong>What you'll need</strong></summary>
 

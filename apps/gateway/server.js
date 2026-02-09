@@ -2,18 +2,18 @@
  * SimplestClaw Gateway Server
  *
  * This server acts as a reverse proxy for OpenClaw, enabling deployment on Railway
- * and other cloud platforms that only expose a single HTTP port.
+ * and other cloud platforms (Cloud Run, DigitalOcean, etc.) that only expose a single HTTP port.
  *
  * It handles:
  * - HTTP proxying to OpenClaw's internal port
  * - WebSocket upgrade proxying for real-time communication
- * - Health checks for Railway's deployment system
+ * - Health checks for cloud deployment systems
  * - Header rewriting to make connections appear local to OpenClaw
  * - Welcome page with connection instructions
  *
  * Architecture:
  * -------------
- * [Internet] → [Railway Port] → [This Proxy :PORT] → [OpenClaw :18789]
+ * [Internet] → [Cloud Port] → [This Proxy :PORT] → [OpenClaw :18789]
  *
  * Environment Variables:
  * ----------------------
@@ -82,14 +82,16 @@ function validateEnvironment() {
     console.error('╔══════════════════════════════════════════════════════════════╗');
     console.error('║  ERROR: No API key configured                                ║');
     console.error('╠══════════════════════════════════════════════════════════════╣');
-    console.error('║  Please set at least one of the following in Railway:       ║');
+    console.error('║  Please set at least one of the following as environment    ║');
+    console.error('║  variables (Railway, Cloud Run, DigitalOcean, etc.):       ║');
     console.error('║                                                              ║');
     console.error('║  • ANTHROPIC_API_KEY  (from console.anthropic.com)          ║');
     console.error('║  • OPENAI_API_KEY     (from platform.openai.com)            ║');
     console.error('║  • GOOGLE_API_KEY     (from aistudio.google.com)            ║');
     console.error('║  • OPENROUTER_API_KEY (from openrouter.ai)                  ║');
     console.error('║                                                              ║');
-    console.error('║  Go to: Railway Dashboard → Your Project → Variables        ║');
+    console.error('║  Configure them in your hosting provider\'s variable UI      ║');
+    console.error('║  (Railway, Cloud Run, DigitalOcean App Platform, etc.)      ║');
     console.error('╚══════════════════════════════════════════════════════════════╝');
     console.error('');
     return false;
@@ -127,14 +129,14 @@ function getWelcomePage() {
     statusClass = 'error';
     statusText = 'Missing API Key';
     statusDetails = `
-      <p>No API key is configured. Add one in Railway Dashboard → Variables:</p>
+      <p>No API key is configured. Add one as an environment variable in your host (Railway, Cloud Run, DigitalOcean, etc.):</p>
       <ul>
         <li><code>ANTHROPIC_API_KEY</code> - from <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></li>
         <li><code>OPENAI_API_KEY</code> - from <a href="https://platform.openai.com" target="_blank">platform.openai.com</a></li>
         <li><code>GOOGLE_API_KEY</code> - from <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a></li>
         <li><code>OPENROUTER_API_KEY</code> - from <a href="https://openrouter.ai" target="_blank">openrouter.ai</a></li>
       </ul>
-      <p>After adding the variable, Railway will automatically redeploy.</p>
+       <p>After adding the variable, redeploy or restart your container.</p>
     `;
   } else if (!openclawHealthy) {
     statusClass = 'warning';
@@ -304,7 +306,7 @@ function getWelcomePage() {
 </head>
 <body>
   <h1>SimplestClaw Gateway</h1>
-  <p class="subtitle">OpenClaw hosted on Railway</p>
+  <p class="subtitle">OpenClaw hosted via SimplestClaw Gateway</p>
   
   <div class="status ${statusClass}">
     <span><strong>Status:</strong> ${statusText}</span>
@@ -451,7 +453,7 @@ function proxyRequest(req, res) {
 // =============================================================================
 
 const server = http.createServer((req, res) => {
-  // Health check endpoint for Railway
+  // Health check endpoint for hosting platforms
   if (req.url === '/health') {
     if (openclawHealthy && hasApiKey) {
       res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -595,7 +597,7 @@ process.on('SIGINT', () => {
 console.log('');
 console.log('╔══════════════════════════════════════════════════════════════╗');
 console.log('║  SimplestClaw Gateway                                        ║');
-console.log('║  OpenClaw hosted on Railway                                  ║');
+console.log('║  OpenClaw hosted via SimplestClaw Gateway                    ║');
 console.log('╚══════════════════════════════════════════════════════════════╝');
 console.log('');
 
