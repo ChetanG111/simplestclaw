@@ -55,6 +55,40 @@ Deploy to the cloud in 60 seconds. Pick your AI provider:
 | **Google** (Gemini) | [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template/simplestclaw-gemini) |
 | **OpenRouter** | [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template/simplestclaw-openrouter) |
 
+#### Prefer Google Cloud Run or DigitalOcean?
+
+Railway is not required—the gateway is just a Node.js service and can run anywhere a container can. A minimal Dockerfile is available at `apps/gateway/Dockerfile`.
+
+- **Google Cloud Run**:  
+  Ensure your Artifact Registry Docker repository exists (run once):  
+  `gcloud artifacts repositories create ${REPO} --repository-format=docker --location=${REGION}`
+  ```bash
+  REGION=us-central1
+  PROJECT_ID=$(gcloud config get-value project)
+  REPO=simplestclaw
+
+  gcloud auth configure-docker ${REGION}-docker.pkg.dev
+
+  docker build -f apps/gateway/Dockerfile -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/simplestclaw-gateway .
+  docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/simplestclaw-gateway
+
+  cat > env.list <<'EOF'
+  OPENAI_API_KEY=your_key_here
+  OPENCLAW_GATEWAY_TOKEN=optional_token
+  EOF
+
+  gcloud run deploy simplestclaw-gateway \
+    --image ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/simplestclaw-gateway \
+    --region ${REGION} \
+    --port 3000 \
+    --env-vars-file env.list
+  ```
+  **Security:** Prefer Cloud Run's Secret Manager integration or encrypted environment variables instead of plain files. If you use `env.list`, keep it out of version control (for example, add it to `.gitignore`). For quick tests you can use `--set-env-vars` instead.
+- **DigitalOcean App Platform**:  
+  Create a new App, point it at this repo, choose `apps/gateway/Dockerfile` as the service source, set the HTTP port to **3000**, and add the same environment variables as above.
+
+For any deployment (Railway, Cloud Run, DigitalOcean, or others), set the provider API key(s) you use — at least one is required — plus the optional `OPENCLAW_GATEWAY_TOKEN`.
+
 <details>
 <summary><strong>What you'll need</strong></summary>
 
